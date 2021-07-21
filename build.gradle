@@ -1,0 +1,44 @@
+buildscript {
+    ext.kotlin_version = "1.5.21"
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath "com.android.tools.build:gradle:4.0.2"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.24.4"
+    }
+}
+
+allprojects {
+    apply plugin: "com.jfrog.artifactory"
+    apply plugin: 'maven-publish'
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+Properties properties = new Properties()
+properties.load(project.rootProject.file("local.properties").newDataInputStream())
+artifactory {
+    contextUrl = "https://devsung.jfrog.io/artifactory"
+    publish {
+        repository {
+            repoKey = "release"
+            username = properties.getProperty("artifactory.user")
+            password = properties.getProperty("artifactory.key")
+            maven = true
+        }
+        defaults {
+            publications('aar')
+            publishArtifacts = true
+            publishPom = true
+        }
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}

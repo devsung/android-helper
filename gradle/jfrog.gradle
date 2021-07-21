@@ -1,0 +1,48 @@
+apply plugin: 'com.android.library'
+
+project.afterEvaluate {
+    publishing {
+        publications {
+            aar(MavenPublication) {
+                groupId = "com.devsung.androidhelper"
+                version = artifactory_version
+                artifactId = module_name
+                artifact("$buildDir/outputs/aar/${module_name}-release.aar")
+                artifact javadocJar
+                artifact sourcesJar
+                pom {
+                    licenses {
+                        license {
+                            name = 'The Apache License, Version 2.0'
+                            url = 'https://github.com/devsung/android-helper/blob/master/LICENSE'
+                        }
+                    }
+                    developers {
+                        developer {
+                            name = 'Devsung'
+                        }
+                    }
+                }
+            }
+        }
+    }
+    artifactoryPublish {
+        publications(publishing.publications.aar)
+    }
+}
+
+task javadoc(type: Javadoc) {
+    source = android.sourceSets.main.java.sourceFiles
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    classpath += configurations.compile
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    archiveClassifier.set('javadoc')
+    from javadoc.destinationDir
+}
+
+task sourcesJar(type: Jar) {
+    archiveClassifier.set('sources')
+    from android.sourceSets.main.java.srcDirs
+}
